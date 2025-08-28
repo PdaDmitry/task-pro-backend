@@ -10,14 +10,19 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: "https://task-pro-front.vercel.app",
+    origin: [
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+      "https://task-pro-front.vercel.app",
+    ],
+    // origin: "https://task-pro-front.vercel.app",
     credentials: true,
   })
 );
 
-app.use("/auth", authRouter);
+// app.get("/health", (_, res) => res.json({ ok: true }));
 
-// app.use("/api/auth", authRoutes);
+app.use("/auth", authRouter);
 
 mongoose
   .connect(process.env.MONGODB_URL, {
@@ -25,7 +30,7 @@ mongoose
   })
   .then(() => {
     app.listen(process.env.PORT || 5000, () =>
-      console.log("✅ Server started")
+      console.log("✅ Server started on port", process.env.PORT || 5000)
     );
   })
   .catch((err) => console.error("❌ Error connecting to MongoDB:", err));
