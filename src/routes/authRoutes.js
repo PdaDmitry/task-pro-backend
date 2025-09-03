@@ -27,6 +27,12 @@ router.post("/register", async (req, res) => {
       expiresIn: "1d",
     });
 
+    console.log("Sending response:", {
+      message: "User registered successfully",
+      user: { id: newUser._id, name: newUser.name, email: newUser.email },
+      token,
+    });
+
     res.status(201).json({
       message: "User registered successfully",
       user: { id: newUser._id, name: newUser.name, email: newUser.email },
