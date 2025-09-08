@@ -10,7 +10,9 @@ router.post("/register", async (req, res) => {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res
+        .status(400)
+        .json({ message: "A user with this email already exists!" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -26,12 +28,6 @@ router.post("/register", async (req, res) => {
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
-
-    // console.log("Sending response:", {
-    //   message: "User registered successfully",
-    //   user: { id: newUser._id, name: newUser.name, email: newUser.email },
-    //   token,
-    // });
 
     res.status(201).json({
       message: "User registered successfully",
