@@ -3,13 +3,14 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const authRouter = require("./routes/authRoutes");
+const usersRouter = require("./routes/usersRoutes");
 
 dotenv.config();
 const app = express();
 
 app.use(express.json());
 
-// Настройка CORS
+// Settings CORS
 const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
@@ -48,6 +49,7 @@ app.use(cors(corsOptions));
 // app.get("/health", (_, res) => res.json({ ok: true }));
 
 app.use("/auth", authRouter);
+app.use("/users", usersRouter);
 
 mongoose
   .connect(process.env.MONGODB_URL, {
