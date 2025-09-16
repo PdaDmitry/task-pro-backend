@@ -50,4 +50,31 @@ router.post("/createBoard", userJWT, async (req, res) => {
   }
 });
 
+router.put("/updateBoard/:id", userJWT, async (req, res) => {
+  try {
+    const { title, icon } = req.body;
+    const board = await Board.findByIdAndUpdate(
+      req.params.id,
+      { title, icon },
+      { new: true }
+    );
+    res.json({ board });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete("/deleteBoard", userJWT, async (req, res) => {
+  try {
+    const { boardId } = req.body;
+
+    await Board.findByIdAndDelete(boardId);
+
+    res.json({ status: true, message: "Board deleted" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 module.exports = router;
