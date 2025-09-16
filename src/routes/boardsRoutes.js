@@ -3,6 +3,18 @@ const router = express.Router();
 const userJWT = require("../middlewares/authMiddleware");
 const Board = require("../models/Board");
 
+router.get("/getUserBoards", userJWT, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const boards = await Board.find({ userId });
+
+    res.json({ status: true, boards });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 router.post("/createBoard", userJWT, async (req, res) => {
   try {
     const { title, icon, background } = req.body;
