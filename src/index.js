@@ -4,6 +4,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const authRouter = require("./routes/authRoutes");
 const usersRouter = require("./routes/usersRoutes");
+const boardsRouter = require("./routes/boardsRoutes");
 
 dotenv.config();
 const app = express();
@@ -50,6 +51,7 @@ app.use(cors(corsOptions));
 
 app.use("/auth", authRouter);
 app.use("/users", usersRouter);
+app.use("/boards", boardsRouter);
 
 mongoose
   .connect(process.env.MONGODB_URL, {
