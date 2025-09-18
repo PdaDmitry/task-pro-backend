@@ -1,23 +1,19 @@
 const { ObjectId } = require("mongodb");
 const mongoose = require("mongoose");
 
-const boardSchema = new mongoose.Schema(
+const columnSchema = new mongoose.Schema(
   {
     title: {
       type: String,
       required: true,
     },
-    icon: {
-      type: String,
-      default: "",
+    order: {
+      type: Number,
+      default: 0,
     },
-    background: {
-      type: String,
-      default: "",
-    },
-    userId: {
+    boardId: {
       type: ObjectId,
-      ref: "client",
+      ref: "Board",
     },
     createdAt: {
       type: Date,
@@ -27,6 +23,6 @@ const boardSchema = new mongoose.Schema(
   { versionKey: false }
 );
 
-const Board = mongoose.model("board", boardSchema);
+const Column = mongoose.model("column", columnSchema);
 
 module.exports = Board;
