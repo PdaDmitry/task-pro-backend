@@ -52,13 +52,13 @@ router.post("/createBoard", userJWT, async (req, res) => {
 
 router.put("/updateBoard/:id", userJWT, async (req, res) => {
   try {
-    const { title, icon } = req.body;
+    const { title, icon, background } = req.body;
     const board = await Board.findByIdAndUpdate(
       req.params.id,
-      { title, icon },
+      { title, icon, background },
       { new: true }
     );
-    res.json({ board });
+    res.json({ status: true, message: "Board updated successfully", board });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
