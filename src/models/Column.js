@@ -25,4 +25,4 @@ const columnSchema = new mongoose.Schema(
 
 const Column = mongoose.model("column", columnSchema);
 
-module.exports = Board;
+module.exports = Column;
