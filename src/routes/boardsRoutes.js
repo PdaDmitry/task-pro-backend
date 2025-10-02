@@ -24,19 +24,34 @@ router.post("/createBoard", userJWT, async (req, res) => {
       return res.status(400).json({ message: "Title is required" });
     }
 
+    const normalizedTitle = title.toLowerCase();
+
+    const userBoards = await Board.find({
+      userId,
+    });
+
+    const duplicateName = userBoards.find(
+      (board) => board.title.toLowerCase() === normalizedTitle
+    );
+
+    if (duplicateName) {
+      return res
+        .status(400)
+        .json({ message: "A board with this name already exists!" });
+    }
+
     const newBoard = new Board({
       title,
       icon,
       background,
       userId,
-      columns: [],
     });
 
     await newBoard.save();
 
     res.status(201).json({
       status: true,
-      message: "Board created successfully",
+      message: "The board has been created successfully.",
       board: {
         _id: newBoard._id,
         title: newBoard.title,
@@ -46,7 +61,10 @@ router.post("/createBoard", userJWT, async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(error.code ?? 500).json({
+      status: false,
+      message: "Server error. Try again later...",
+    });
   }
 });
 
@@ -70,7 +88,7 @@ router.delete("/deleteBoard", userJWT, async (req, res) => {
 
     await Board.findByIdAndDelete(boardId);
 
-    res.json({ status: true, message: "Board deleted" });
+    res.json({ status: true, message: "The Board has been removed." });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

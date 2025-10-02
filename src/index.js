@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const authRouter = require("./routes/authRoutes");
 const usersRouter = require("./routes/usersRoutes");
 const boardsRouter = require("./routes/boardsRoutes");
+const columnsRouter = require("./routes/columnsRoutes");
 
 dotenv.config();
 const app = express();
@@ -35,23 +36,10 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// app.use(
-//   cors({
-//     origin: [
-//       "http://localhost:5173",
-//       "http://127.0.0.1:5173",
-//       "https://task-pro-front.vercel.app",
-//     ],
-
-//     credentials: true,
-//   })
-// );
-
-// app.get("/health", (_, res) => res.json({ ok: true }));
-
 app.use("/auth", authRouter);
 app.use("/users", usersRouter);
 app.use("/boards", boardsRouter);
+app.use("/columns", columnsRouter);
 
 mongoose
   .connect(process.env.MONGODB_URL, {
