@@ -70,14 +70,45 @@ router.post("/createColumn", userJWT, async (req, res) => {
 router.put("/updateColumn/:id", userJWT, async (req, res) => {
   try {
     const { title } = req.body;
-    const column = await Column.findByIdAndUpdate(
-      req.params.id,
-      { title },
+    const columnId = req.params.id;
+
+    const column = await Column.findById(columnId);
+    if (!column) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Column not found" });
+    }
+
+    const duplicate = await Column.findOne({
+      boardId: column.boardId,
+      title: title.trim(),
+      _id: { $ne: columnId },
+    });
+
+    if (duplicate) {
+      return res.status(400).json({
+        status: false,
+        message: "A column with this name already exists in the board!",
+      });
+    }
+
+    const updatedColumn = await Column.findByIdAndUpdate(
+      columnId,
+      { title: title.trim() },
       { new: true }
     );
-    res.json({ status: true, message: "Column updated successfully", column });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+
+    res.json({
+      status: true,
+      message: "Column updated successfully",
+      column: updatedColumn,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(error.code ?? 500).json({
+      status: false,
+      message: "Server error. Try again later...",
+    });
   }
 });
 

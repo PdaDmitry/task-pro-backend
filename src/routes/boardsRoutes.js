@@ -73,14 +73,46 @@ router.post("/createBoard", userJWT, async (req, res) => {
 router.put("/updateBoard/:id", userJWT, async (req, res) => {
   try {
     const { title, icon, background } = req.body;
-    const board = await Board.findByIdAndUpdate(
-      req.params.id,
+    // const userId = req.user.id;
+    const boardId = req.params.id;
+
+    const board = await Board.findById(boardId);
+    if (!board) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Board not found" });
+    }
+
+    const duplicate = await Board.findOne({
+      userId: board.userId,
+      title: title.trim(),
+      _id: { $ne: boardId },
+    });
+
+    if (duplicate) {
+      return res.status(400).json({
+        status: false,
+        message: "A board with this name already exists!",
+      });
+    }
+
+    const updatedBoard = await Board.findByIdAndUpdate(
+      boardId,
       { title, icon, background },
       { new: true }
     );
-    res.json({ status: true, message: "Board updated successfully", board });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+
+    res.json({
+      status: true,
+      message: "Board updated successfully",
+      board: updatedBoard,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(error.code ?? 500).json({
+      status: false,
+      message: "Server error. Try again later...",
+    });
   }
 });
 
