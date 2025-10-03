@@ -67,6 +67,20 @@ router.post("/createColumn", userJWT, async (req, res) => {
   }
 });
 
+router.put("/updateColumn/:id", userJWT, async (req, res) => {
+  try {
+    const { title } = req.body;
+    const column = await Column.findByIdAndUpdate(
+      req.params.id,
+      { title },
+      { new: true }
+    );
+    res.json({ status: true, message: "Column updated successfully", column });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.delete("/deleteColumn", userJWT, async (req, res) => {
   try {
     const { columnId } = req.body;
