@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const userJWT = require("../middlewares/authMiddleware");
 const Board = require("../models/Board");
+const Column = require("../models/Column");
+const Card = require("../models/Card");
 
 router.get("/getUserBoards", userJWT, async (req, res) => {
   try {
@@ -85,6 +87,10 @@ router.put("/updateBoard/:id", userJWT, async (req, res) => {
 router.delete("/deleteBoard", userJWT, async (req, res) => {
   try {
     const { boardId } = req.body;
+
+    await Column.deleteMany({ boardId });
+
+    await Card.deleteMany({ boardId });
 
     await Board.findByIdAndDelete(boardId);
 

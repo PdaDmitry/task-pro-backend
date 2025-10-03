@@ -3,6 +3,18 @@ const router = express.Router();
 const userJWT = require("../middlewares/authMiddleware");
 const Column = require("../models/Column");
 
+router.get("/getBoardColumns", userJWT, async (req, res) => {
+  try {
+    const { boardId } = req.query;
+    const columns = await Column.find({ boardId });
+
+    res.json({ status: true, columns });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 router.post("/createColumn", userJWT, async (req, res) => {
   try {
     const { title, order, boardId } = req.body;
