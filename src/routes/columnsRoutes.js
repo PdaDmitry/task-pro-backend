@@ -127,21 +127,30 @@ router.delete("/deleteColumn", userJWT, async (req, res) => {
 
 router.patch("/reorder", userJWT, async (req, res) => {
   try {
-    const { columns } = req.body; // [{ _id, order }, ...]
+    const { columns, boardId } = req.body;
     if (!Array.isArray(columns)) return res.status(400).send("Invalid payload");
 
-    const ops = columns.map((c) => ({
+    const columnsUpdateOrder = columns.map((c) => ({
       updateOne: {
         filter: { _id: c._id },
         update: { $set: { order: c.order } },
       },
     }));
 
-    if (ops.length) {
-      await Column.bulkWrite(ops);
+    if (columnsUpdateOrder.length) {
+      await Column.bulkWrite(columnsUpdateOrder);
     }
 
-    res.json({ ok: true });
+    const updatedColumns = await Column.find({ boardId }).sort({
+      order: 1,
+    });
+
+    // console.log("!!!!!!!!!", updatedColumns);
+
+    res.json({
+      ok: true,
+      columns: updatedColumns,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send("Server error");
