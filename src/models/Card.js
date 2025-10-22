@@ -14,7 +14,7 @@ const cardSchema = new mongoose.Schema(
     priority: {
       type: String,
       enum: ["low", "medium", "high", "without"],
-      required: true,
+      default: "without",
     },
     order: {
       type: Number,

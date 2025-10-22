@@ -6,6 +6,7 @@ const authRouter = require("./routes/authRoutes");
 const usersRouter = require("./routes/usersRoutes");
 const boardsRouter = require("./routes/boardsRoutes");
 const columnsRouter = require("./routes/columnsRoutes");
+const cardsRouter = require("./routes/cardsRoutes");
 
 dotenv.config();
 const app = express();
@@ -40,6 +41,7 @@ app.use("/auth", authRouter);
 app.use("/users", usersRouter);
 app.use("/boards", boardsRouter);
 app.use("/columns", columnsRouter);
+app.use("/cards", cardsRouter);
 
 mongoose
   .connect(process.env.MONGODB_URL, {
