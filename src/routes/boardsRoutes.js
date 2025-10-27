@@ -117,17 +117,25 @@ router.put("/updateBoard/:id", userJWT, async (req, res) => {
 });
 
 router.delete("/deleteBoard", userJWT, async (req, res) => {
+  const { boardId } = req.body;
+
+  const session = await Board.startSession();
+  session.startTransaction();
+
   try {
-    const { boardId } = req.body;
+    await Column.deleteMany({ boardId }, { session });
 
-    await Column.deleteMany({ boardId });
+    await Card.deleteMany({ boardId }, { session });
 
-    await Card.deleteMany({ boardId });
+    await Board.findByIdAndDelete(boardId, { session });
 
-    await Board.findByIdAndDelete(boardId);
+    await session.commitTransaction();
+    session.endSession();
 
     res.json({ status: true, message: "The Board has been removed." });
   } catch (err) {
+    await session.commitTransaction();
+    session.endSession();
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }

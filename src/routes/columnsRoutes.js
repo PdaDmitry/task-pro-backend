@@ -2,13 +2,15 @@ const express = require("express");
 const router = express.Router();
 const userJWT = require("../middlewares/authMiddleware");
 const Column = require("../models/Column");
+const Card = require("../models/Card");
 
-router.get("/getBoardColumns", userJWT, async (req, res) => {
+router.get("/getBoardColumnsAndCards", userJWT, async (req, res) => {
   try {
     const { boardId } = req.query;
     const columns = await Column.find({ boardId });
+    const cards = await Card.find({ boardId });
 
-    res.json({ status: true, columns });
+    res.json({ status: true, columns, cards });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -113,13 +115,23 @@ router.put("/updateColumn/:id", userJWT, async (req, res) => {
 });
 
 router.delete("/deleteColumn", userJWT, async (req, res) => {
-  try {
-    const { columnId } = req.body;
+  const { columnId } = req.body;
 
-    await Column.findByIdAndDelete(columnId);
+  const session = await Column.startSession();
+  session.startTransaction();
+
+  try {
+    await Column.findByIdAndDelete(columnId, { session });
+
+    await Card.deleteMany({ columnId }, { session });
+
+    await session.commitTransaction();
+    session.endSession();
 
     res.json({ status: true, message: "The column has been removed." });
   } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
