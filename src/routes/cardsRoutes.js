@@ -65,4 +65,17 @@ router.post("/createCard", userJWT, async (req, res) => {
   }
 });
 
+router.delete("/deleteCard", userJWT, async (req, res) => {
+  const { cardId } = req.body;
+
+  try {
+    await Card.findByIdAndDelete(cardId);
+
+    res.json({ status: true, message: "The card has been removed." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 module.exports = router;
