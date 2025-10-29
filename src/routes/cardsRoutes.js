@@ -17,16 +17,16 @@ router.post("/createCard", userJWT, async (req, res) => {
 
     const normalizedTitle = title.toLowerCase();
 
-    const columnCards = await Card.find({ columnId });
+    const boardCards = await Card.find({ boardId });
 
-    const duplicateCard = columnCards.find(
+    const duplicateCard = boardCards.find(
       (card) => card.title.toLowerCase() === normalizedTitle
     );
 
     if (duplicateCard) {
       return res.status(400).json({
         status: false,
-        message: "A card with this title already exists in this column!",
+        message: "A card with this title already exists in this board!",
       });
     }
 
@@ -55,6 +55,49 @@ router.post("/createCard", userJWT, async (req, res) => {
         columnId: newCard.columnId,
         order: newCard.order,
       },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(error.code ?? 500).json({
+      status: false,
+      message: "Server error. Try again later...",
+    });
+  }
+});
+
+router.put("/updateCard/:id", userJWT, async (req, res) => {
+  try {
+    const { title, description, priority, deadline } = req.body;
+    const cardId = req.params.id;
+
+    const card = await Card.findById(cardId);
+    if (!card) {
+      return res.status(404).json({ status: false, message: "Card not found" });
+    }
+
+    const duplicateCard = await Card.findOne({
+      boardId: card.boardId,
+      title: title.trim(),
+      _id: { $ne: cardId },
+    });
+
+    if (duplicateCard) {
+      return res.status(400).json({
+        status: false,
+        message: "A card with this title already exists in this board!",
+      });
+    }
+
+    const updatedCard = await Card.findByIdAndUpdate(
+      cardId,
+      { title: title.trim(), description, priority, deadline },
+      { new: true }
+    );
+
+    res.json({
+      status: true,
+      message: "The card has been updated successfully.",
+      card: updatedCard,
     });
   } catch (error) {
     console.error(error);

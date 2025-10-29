@@ -102,7 +102,7 @@ router.put("/updateColumn/:id", userJWT, async (req, res) => {
 
     res.json({
       status: true,
-      message: "Column updated successfully",
+      message: "The column has been updated successfully",
       column: updatedColumn,
     });
   } catch (error) {
