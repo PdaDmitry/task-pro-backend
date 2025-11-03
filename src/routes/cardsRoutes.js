@@ -121,4 +121,34 @@ router.delete("/deleteCard", userJWT, async (req, res) => {
   }
 });
 
+router.patch("/reorder", userJWT, async (req, res) => {
+  try {
+    const { columnId, cards } = req.body;
+    if (!Array.isArray(cards)) return res.status(400).send("Invalid payload");
+
+    const cardsUpdateOrder = cards.map((c) => ({
+      updateOne: {
+        filter: { _id: c._id },
+        update: { $set: { order: c.order } },
+      },
+    }));
+
+    if (cardsUpdateOrder.length) {
+      await Card.bulkWrite(cardsUpdateOrder);
+    }
+
+    const updatedCards = await Card.find({ columnId }).sort({
+      order: 1,
+    });
+
+    res.json({
+      ok: true,
+      cards: updatedCards,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
+});
+
 module.exports = router;

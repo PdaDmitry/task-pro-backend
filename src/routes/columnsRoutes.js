@@ -7,8 +7,8 @@ const Card = require("../models/Card");
 router.get("/getBoardColumnsAndCards", userJWT, async (req, res) => {
   try {
     const { boardId } = req.query;
-    const columns = await Column.find({ boardId });
-    const cards = await Card.find({ boardId });
+    const columns = await Column.find({ boardId }).sort({ order: 1 });
+    const cards = await Card.find({ boardId }).sort({ order: 1 });
 
     res.json({ status: true, columns, cards });
   } catch (error) {
