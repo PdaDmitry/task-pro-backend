@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const userJWT = require("../middlewares/authMiddleware");
 const Card = require("../models/Card");
+const Column = require("../models/Column");
 
 router.post("/createCard", userJWT, async (req, res) => {
   try {
@@ -67,7 +68,8 @@ router.post("/createCard", userJWT, async (req, res) => {
 
 router.put("/updateCard/:id", userJWT, async (req, res) => {
   try {
-    const { title, description, priority, deadline } = req.body;
+    const { title, description, priority, deadline, order, columnId } =
+      req.body;
     const cardId = req.params.id;
 
     const card = await Card.findById(cardId);
@@ -75,28 +77,60 @@ router.put("/updateCard/:id", userJWT, async (req, res) => {
       return res.status(404).json({ status: false, message: "Card not found" });
     }
 
-    const duplicateCard = await Card.findOne({
-      boardId: card.boardId,
-      title: title.trim(),
-      _id: { $ne: cardId },
-    });
-
-    if (duplicateCard) {
-      return res.status(400).json({
-        status: false,
-        message: "A card with this title already exists in this board!",
+    if (title && title.trim() !== card.title) {
+      const duplicateCard = await Card.findOne({
+        boardId: card.boardId,
+        title: title.trim(),
+        _id: { $ne: cardId },
       });
+
+      if (duplicateCard) {
+        return res.status(400).json({
+          status: false,
+          message: "A card with this title already exists in this board!",
+        });
+      }
     }
 
-    const updatedCard = await Card.findByIdAndUpdate(
-      cardId,
-      { title: title.trim(), description, priority, deadline },
-      { new: true }
+    const newColumn = await Column.findById(columnId);
+    if (!newColumn) {
+      return res
+        .status(400)
+        .json({ status: false, message: "Column not found" });
+    }
+
+    let newOrder = order;
+    if (String(card.columnId) !== String(columnId)) {
+      const lastCard = await Card.findOne({ columnId })
+        .sort({ order: -1 })
+        .select("order");
+
+      newOrder = lastCard ? lastCard.order + 1 : 0;
+    }
+
+    const updateData = {
+      title: title ? title.trim() : undefined,
+      description,
+      priority,
+      deadline,
+      columnId,
+      order: newOrder,
+    };
+
+    Object.keys(updateData).forEach(
+      (key) => updateData[key] === undefined && delete updateData[key]
     );
+
+    const updatedCard = await Card.findByIdAndUpdate(cardId, updateData, {
+      new: true,
+    });
 
     res.json({
       status: true,
-      message: "The card has been updated successfully.",
+      message:
+        String(card.columnId) === String(columnId)
+          ? "The card has been updated successfully."
+          : `The card has been successfully moved to the "${newColumn.title}" column.`,
       card: updatedCard,
     });
   } catch (error) {
