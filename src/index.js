@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const authRouter = require("./routes/authRoutes");
-const usersRouter = require("./routes/usersRoutes");
+// const usersRouter = require("./routes/usersRoutes");
 const boardsRouter = require("./routes/boardsRoutes");
 const columnsRouter = require("./routes/columnsRoutes");
 const cardsRouter = require("./routes/cardsRoutes");
@@ -38,7 +38,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.use("/auth", authRouter);
-app.use("/users", usersRouter);
+// app.use("/users", usersRouter);
 app.use("/boards", boardsRouter);
 app.use("/columns", columnsRouter);
 app.use("/cards", cardsRouter);
