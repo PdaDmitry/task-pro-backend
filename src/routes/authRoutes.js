@@ -145,7 +145,7 @@ router.patch("/updateUserProfile", userJWT, async (req, res) => {
     });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ error: err.message, status: false });
+    res.status(err.code ?? 500).json({ error: err.message, status: false });
   }
 });
 
