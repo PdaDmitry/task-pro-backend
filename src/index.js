@@ -7,6 +7,7 @@ const authRouter = require("./routes/authRoutes");
 const boardsRouter = require("./routes/boardsRoutes");
 const columnsRouter = require("./routes/columnsRoutes");
 const cardsRouter = require("./routes/cardsRoutes");
+const path = require("path");
 
 dotenv.config();
 const app = express();
@@ -34,6 +35,8 @@ const corsOptions = {
   },
   credentials: true,
 };
+
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.use(cors(corsOptions));
 

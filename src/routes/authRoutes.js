@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const userJWT = require("../middlewares/authMiddleware");
 const Client = require("../models/Client");
+const upload = require("../utils/upload");
 
 router.post("/register", async (req, res) => {
   try {
@@ -101,52 +102,57 @@ router.patch("/updateTheme", userJWT, async (req, res) => {
   }
 });
 
-router.patch("/updateUserProfile", userJWT, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { name, email, password } = req.body;
+router.patch(
+  "/updateUserProfile",
+  userJWT,
+  upload.single("photo"),
+  async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const { name, email, password } = req.body;
 
-    if (!name && !email && !password) {
-      return res.status(400).json({ message: "No data to update" });
-    }
+      const updateData = {};
 
-    const updateData = {};
+      if (name) updateData.name = name;
+      if (email) {
+        const existingUser = await Client.findOne({ email });
 
-    if (name) updateData.name = name;
-    if (email) {
-      const existingUser = await Client.findOne({ email });
+        if (existingUser && existingUser._id.toString() !== userId) {
+          return res
+            .status(400)
+            .json({ message: "A user with this email already exists" });
+        }
 
-      if (existingUser && existingUser._id.toString() !== userId) {
-        return res
-          .status(400)
-          .json({ message: "A user with this email already exists" });
+        updateData.email = email;
+      }
+      if (password) {
+        updateData.password = await bcrypt.hash(password, 10);
       }
 
-      updateData.email = email;
-    }
-    if (password) {
-      updateData.password = await bcrypt.hash(password, 10);
-    }
+      if (req.file) {
+        updateData.photo = `/uploads/users/${req.file.filename}`;
+      }
 
-    const updatedUser = await Client.findByIdAndUpdate(
-      userId,
-      { $set: updateData },
-      { new: true }
-    );
+      const updatedUser = await Client.findByIdAndUpdate(
+        userId,
+        { $set: updateData },
+        { new: true }
+      );
 
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.status(200).json({
+        status: true,
+        message: "Profile updated successfully",
+        user: updatedUser,
+      });
+    } catch (err) {
+      console.log(err);
+      res.status(err.code ?? 500).json({ error: err.message, status: false });
     }
-
-    res.status(200).json({
-      status: true,
-      message: "Profile updated successfully",
-      user: updatedUser,
-    });
-  } catch (err) {
-    console.log(err);
-    res.status(err.code ?? 500).json({ error: err.message, status: false });
   }
-});
+);
 
 module.exports = router;

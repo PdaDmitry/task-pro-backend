@@ -26,6 +26,11 @@ const clientSchema = new mongoose.Schema(
       required: true,
     },
 
+    photo: {
+      type: String,
+      default: "",
+    },
+
     createdAt: {
       type: Date,
       default: Date.now,
