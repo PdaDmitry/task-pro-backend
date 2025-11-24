@@ -2,7 +2,9 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-const uploadPath = path.join(__dirname, "../../uploads/users");
+const uploadDir = path.join(process.cwd(), "uploads");
+const uploadPath = path.join(uploadDir, "users");
+// const uploadPath = path.join(__dirname, "../../uploads/users");
 
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
@@ -20,7 +22,7 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
+  if (file.mimetype && file.mimetype.startsWith("image/")) {
     cb(null, true);
   } else {
     cb(new Error("Only images are allowed"), false);

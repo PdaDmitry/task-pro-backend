@@ -6,6 +6,9 @@ const jwt = require("jsonwebtoken");
 const userJWT = require("../middlewares/authMiddleware");
 const Client = require("../models/Client");
 const upload = require("../utils/upload");
+// const fs = require("fs");
+const fs = require("fs").promises;
+const path = require("path");
 
 router.post("/register", async (req, res) => {
   try {
@@ -68,6 +71,7 @@ router.post("/login", async (req, res) => {
         name: user.name,
         email: user.email,
         theme: user.theme,
+        photo: user.photo,
       },
     });
   } catch (error) {
@@ -111,18 +115,26 @@ router.patch(
       const userId = req.user.id;
       const { name, email, password } = req.body;
 
+      const user = await Client.findById(userId);
+      if (!user) {
+        return res
+          .status(404)
+          .json({ message: "User not found", status: false });
+      }
+
       const updateData = {};
 
       if (name) updateData.name = name;
       if (email) {
-        const existingUser = await Client.findOne({ email });
-
-        if (existingUser && existingUser._id.toString() !== userId) {
+        const existingUser = await Client.findOne({
+          email,
+          _id: { $ne: userId },
+        });
+        if (existingUser) {
           return res
             .status(400)
             .json({ message: "A user with this email already exists" });
         }
-
         updateData.email = email;
       }
       if (password) {
@@ -130,6 +142,17 @@ router.patch(
       }
 
       if (req.file) {
+        if (user.photo) {
+          const oldPhotoPath = path.join(process.cwd(), user.photo);
+          try {
+            await fs.unlink(oldPhotoPath);
+            console.log("Old photo deleted:", oldPhotoPath);
+          } catch (err) {
+            if (err.code !== "ENOENT")
+              console.log("Error deleting old photo:", err);
+          }
+        }
+
         updateData.photo = `/uploads/users/${req.file.filename}`;
       }
 
@@ -138,10 +161,6 @@ router.patch(
         { $set: updateData },
         { new: true }
       );
-
-      if (!updatedUser) {
-        return res.status(404).json({ message: "User not found" });
-      }
 
       res.status(200).json({
         status: true,
