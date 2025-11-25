@@ -174,4 +174,31 @@ router.patch(
   }
 );
 
+router.patch("/removeUserPhoto", userJWT, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await Client.findById(userId);
+    if (!user)
+      return res.status(404).json({ status: false, message: "User not found" });
+
+    if (user.photo) {
+      try {
+        const filePath = path.join(process.cwd(), user.photo);
+        await fs.unlink(filePath);
+        console.log("Deleted old photo:", filePath);
+      } catch (err) {
+        if (err.code !== "ENOENT") console.error("Error deleting photo:", err);
+      }
+    }
+
+    user.photo = "";
+    await user.save();
+
+    res.status(200).json({ status: true, message: "Photo removed", user });
+  } catch (err) {
+    console.log(err);
+    res.status(err.code ?? 500).json({ error: err.message, status: false });
+  }
+});
+
 module.exports = router;
