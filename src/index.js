@@ -12,7 +12,14 @@ const path = require("path");
 dotenv.config();
 const app = express();
 
-app.use(express.json());
+// app.use(express.json());
+
+app.use((req, res, next) => {
+  if (req.headers["content-type"]?.includes("multipart/form-data")) {
+    return next();
+  }
+  express.json()(req, res, next);
+});
 
 // Settings CORS
 const corsOptions = {
